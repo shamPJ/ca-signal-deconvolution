@@ -19,8 +19,8 @@ Data loaded as .h5 files, which contains data structure with
 <KeysViewHDF5 ['dff', 'dte', 'dto', 'ephys_baseline_subtracted', 'ephys_raw', 'genotype', 'quiroga', 'sptimes']>
 
 - dff
-- dte
-- dto
+- dte - sampling periods for ephys 1/sampling rate, seconds
+- dto - sampling periods for two-photon 1/sampling rate, seconds
 - ephys_baseline_subtracted
 - ephys_raw
 - genotype
@@ -42,13 +42,13 @@ def get_data():
     data = {}
 
     # Get all .h5 files' names
-    path = os.path.join(wd, "data", "*.h5")
+    path = os.path.join(wd, "../data", "*.h5")
     for file in glob.glob(path):
         file_name = os.path.split(file)[-1].split(".")[0]
         # Read h5 file
         h5 = h5py.File(file,'r')
         # Get data from h5 datastructure
-        dto = 1.0 * np.array(h5['dto'])
+        dto = 1.0 * np.array(h5['dto'])  # sampling periods 1/sampling rate, seconds
         dte = 1.0 * np.array(h5['dte'])
         quiroga = 1.0 * np.array(h5['quiroga'])
         dff = np.array(h5['dff']).ravel()
@@ -59,14 +59,21 @@ def get_data():
         # Store data in dict
         data[file_name] = {"genotype" : genotype, "dff": dff, "ephys": ephys, "dto": dto, "dte": dte, "sptimes": sptimes, "quiroga": quiroga}
     
+    print("Number of .h5 files found in dir: ", len(data))
+
     return (data)
 
 def plot_func(data_dict):
     # Get data from dict
     dto, dte, dff, ephys, sptimes, quiroga = data_dict["dto"], data_dict["dte"], data_dict["dff"], data_dict["ephys"], data_dict["sptimes"], data_dict["quiroga"]
-
+    
+    # binning at 1 second, sampling rate 4KHz
+    stop = int( int(len(ephys) * dte) / dte )
+    spikes = (ephys >= quiroga).astype(int) 
+    frate = np.sum(spikes[:stop].reshape(-1, int(1/dte)), axis=-1) / 1
+   
     # Plot and save traces
-    fig, ax = plt.subplots(3, 1, sharex=True, sharey=False)
+    fig, ax = plt.subplots(4, 1, sharex=True, sharey=False)
 
     ax[0].plot(np.arange(0, len(dff)*dto, dto), dff, 'g')
     ax[0].set_ylabel('DF/F')
@@ -80,12 +87,19 @@ def plot_func(data_dict):
     ax[2].set_xlabel('Time [s]')
     ax[2].tick_params(labelleft=False) 
 
+    ax[3].plot(np.arange(len(frate)), frate, 'b')
+    ax[3].set_ylabel('firing rate')
+
     for axis in ax:
         axis.spines[['right', 'top']].set_visible(False)
-
     plt.savefig('traces.png')
 
-data = get_data()
-first_key = next(iter(data))
-plot_func(data[first_key])
+def main():
+    data = get_data()
+    for key in iter(data):
+        plot_func(data[key])
+    plt.show()
+if __name__ == "__main__":
+    main()
+
 
