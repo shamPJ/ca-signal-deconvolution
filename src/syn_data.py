@@ -35,14 +35,16 @@ ax[0].plot(time, spikes, 'g')
 ax[0].set_ylabel('spikes')
 
 ax[1].plot(time[:cutoff], exp_kernel, 'k')
-ax[1].set_ylabel('mV')
+ax[1].set_ylabel('au')
 
 ax[2].plot(time, conv_signal_cut, 'b')
-ax[2].set_ylabel('mV')
+ax[2].set_ylabel('au')
 ax[2].set_xlabel('Time [s]')
-ax[2].tick_params(labelleft=False) 
 
 for axis in ax:
     axis.spines[['right', 'top']].set_visible(False)
+
+fig.tight_layout()
+plt.savefig('conv.png')
 plt.show()
 
