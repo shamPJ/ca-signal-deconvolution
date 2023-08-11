@@ -36,6 +36,14 @@ import os
 
 
 def get_data():
+
+    """
+    Function to read in saved .h5 files in dir "data".
+
+    :out data: dictonary with keys corresponding to .h5 file name and value is another dict with
+                experimental data (keys are "genotype" , "dff", "ephys", "dto", "dte", "sptimes", "quiroga")
+
+    """
     # Get current working directory
     wd = os.getcwd()
     # List to store names of all .h5 files in the directory
@@ -61,7 +69,7 @@ def get_data():
     
     print("Number of .h5 files found in dir: ", len(data))
 
-    return (data)
+    return data
 
 def plot_func(data_dict):
     # Get data from dict
@@ -99,6 +107,7 @@ def main():
     for key in iter(data):
         plot_func(data[key])
     plt.show()
+
 if __name__ == "__main__":
     main()
 
