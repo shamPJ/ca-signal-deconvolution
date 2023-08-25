@@ -50,7 +50,8 @@ def get_data():
     data = {}
 
     # Get all .h5 files' names
-    path = os.path.join(wd, "../data", "*.h5")
+    path = os.path.join(wd, "data", "*.h5")
+    print(path)
     for file in glob.glob(path):
         file_name = os.path.split(file)[-1].split(".")[0]
         # Read h5 file
